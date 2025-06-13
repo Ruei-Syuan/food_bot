@@ -1,3 +1,4 @@
+# ============================== ENVIROMENT ====================================
 from flask import Flask, request, abort
 
 from linebot.v3 import (
@@ -18,41 +19,81 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 import os
+from linebot import LineBotApi, WebhookHandler
+from linebot.models import MessageEvent, TextMessage, TextSendMessage,TextSendMessage, LocationSendMessage
+import json
+import sqlite3
+
 app = Flask(__name__)
 
-configuration = Configuration(access_token=os.getenv('CHANNEL_ACCESS_TOKEN'))
-line_handler = WebhookHandler(os.getenv('CHANNEL_SECRET')) # Channel secret 
+CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
 
-@app.route("/callback", methods=['POST'])
-def callback():
-    # get X-Line-Signature header value
-    signature = request.headers['X-Line-Signature']
+# ========================== FUNCTION CODE =========================================
+configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(CHANNEL_SECRET)
+line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 
-    # get request body as text
+# ==============================================================================================
+# 根目錄
+@app.route("/")
+def home():
+    return "<h1>hello world</h1>"
+
+# ==============================================================================================
+# 建立資料庫連線
+def get_location(text):
+    conn = sqlite3.connect('LINEBOT_DB.db')  # 連接資料庫
+    cursor = conn.cursor()
+
+    # 查詢符合輸入內容的地點
+    cursor.execute("SELECT title, address, latitude, longitude FROM food_map WHERE keyword=?", (text,))
+    row = cursor.fetchone()
+    
+    conn.close()  # 關閉連線
+
+    if row:
+        return {'title': row[0], 'address': row[1], 'latitude': row[2], 'longitude': row[3]}
+    else:
+        return False
+
+@app.route("/linebot2", methods=['POST'])
+def linebot2():
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    json_data = json.loads(body)
+    print(json_data)
 
-    # handle webhook body
     try:
-        line_handler.handle(body, signature)
-    except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
-        abort(400)
+        signature = request.headers['X-Line-Signature']
+        handler.handle(body, signature)
+        
+        msg = json_data['events'][0]['message']['text']
+        # print('tk: ',tk)
+        print('msg: ',msg)
+        
+        location_data = get_location(msg)  # 從資料庫查詢地點
+        # print('location_data: ',location_data)
+        
+        if location_data:
+            location_message = LocationSendMessage(
+                title=location_data['title'],
+                address=location_data['address'],
+                latitude=location_data['latitude'],
+                longitude=location_data['longitude']
+            )
+            tk = json_data['events'][0]['replyToken']
+            # print('tk: ',tk)
+            print(location_message)
+            line_bot_api.reply_message(tk, location_message)
+        else:
+            text_message = TextSendMessage(text='找不到相關地點')
+            tk = json_data['events'][0]['replyToken']
+            # print('tk: ',tk)
+            line_bot_api.reply_message(tk, text_message)
+    except:
+        print('error')
 
     return 'OK'
-
-# 擴充function的地方
-@line_handler.add(MessageEvent, message=TextMessageContent)
-def handle_message(event):
-    with ApiClient(configuration) as api_client:
-        line_bot_api = MessagingApi(api_client)
-        line_bot_api.reply_message_with_http_info(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                # 回應訊息給使用者的地方
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
-
+# =========================== MAIN CODE =======================================
 if __name__ == "__main__":
     app.run()
