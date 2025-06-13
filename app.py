@@ -56,24 +56,22 @@ def get_location(text):
         return {'title': row[0], 'address': row[1], 'latitude': row[2], 'longitude': row[3]}
     else:
         return False
-
+    
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
-    body = request.get_data(as_text=True)
-    json_data = json.loads(body)
-    # print(json_data)
-
     try:
+        body = request.get_data(as_text=True)
+        json_data = json.loads(body)
+
         signature = request.headers['X-Line-Signature']
-        handler.handle(body, signature)
-        
+
         msg = json_data['events'][0]['message']['text']
-        # print('tk: ',tk)
-        print('msg: ',msg)
-        
-        location_data = get_location(msg)  # 從資料庫查詢地點
-        # print('location_data: ',location_data)
-        
+        tk = json_data['events'][0]['replyToken']
+
+        # print('msg:', msg)
+
+        location_data = get_location(msg)
+
         if location_data:
             location_message = LocationSendMessage(
                 title=location_data['title'],
@@ -81,19 +79,16 @@ def linebot2():
                 latitude=location_data['latitude'],
                 longitude=location_data['longitude']
             )
-            tk = json_data['events'][0]['replyToken']
-            # print('tk: ',tk)
-            print(location_message)
             line_bot_api.reply_message(tk, location_message)
         else:
             text_message = TextSendMessage(text='找不到相關地點')
-            tk = json_data['events'][0]['replyToken']
-            # print('tk: ',tk)
             line_bot_api.reply_message(tk, text_message)
-    except:
-        print('error')
+
+    except Exception as e:
+        print('error:', e)
 
     return 'OK'
+
 # =========================== MAIN CODE =======================================
 if __name__ == "__main__":
     app.run()
