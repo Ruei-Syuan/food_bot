@@ -61,7 +61,7 @@ def get_location(text):
 def linebot2():
     body = request.get_data(as_text=True)
     json_data = json.loads(body)
-    print(json_data)
+    # print(json_data)
 
     try:
         signature = request.headers['X-Line-Signature']
