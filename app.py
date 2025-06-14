@@ -1,23 +1,6 @@
 # ============================== ENVIROMENT ====================================
 from flask import Flask, abort, request #, abort
 
-# from linebot.v3 import (
-#     WebhookHandler
-# )
-# from linebot.v3.exceptions import (
-    # InvalidSignatureError
-# )
-from linebot.v3.messaging import (
-    Configuration,
-    # ApiClient,
-    # MessagingApi,
-    # ReplyMessageRequest,
-    # TextMessage
-)
-# from linebot.v3.webhooks import (
-#     MessageEvent,
-#     TextMessageContent
-# )
 import os
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
@@ -96,7 +79,7 @@ def linebot2():
             line_bot_api.reply_message(tk, text_message)
 
     except Exception as e:
-        # print('error:', e)
+        print('error:', e)
         return 'OK'
 
     return 'OK'
@@ -105,7 +88,3 @@ def linebot2():
 # Vercel 自己會處理函式呼叫，不需要你手動啟動伺服器。
 if __name__ == "__main__":
     app.run()
-# if __name__ == "__main__":
-    # import os
-    # port = int(os.environ.get("PORT", 5000))
-    # app.run(host="0.0.0.0", port=port)
