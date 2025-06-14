@@ -35,13 +35,13 @@ def handle_event_async(json_data):
 
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
-    print(CHANNEL_ACCESS_TOKEN)
-    print(CHANNEL_SECRET)
-    body = request.get_data(as_text=True)
-    json_data = json.loads(body)
+    # print(CHANNEL_ACCESS_TOKEN)
+    # print(CHANNEL_SECRET)
+    # body = request.get_data(as_text=True)
+    # json_data = json.loads(body)
 
     # 先快速响应 LINE，避免 webhook 超时
-    Thread(target=handle_event_async, args=(json_data,)).start()
+    Thread(target=handle_event_async, args=(CHANNEL_ACCESS_TOKEN,CHANNEL_SECRET)).start()
     return 'OK', 200
 # # ============================== ENVIROMENT ====================================
 # from flask import Flask, request #, abort
