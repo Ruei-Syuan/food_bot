@@ -29,6 +29,8 @@ app = Flask(__name__)
 
 CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
 CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
+print(CHANNEL_ACCESS_TOKEN)
+print(CHANNEL_SECRET)
 
 # ========================== FUNCTION CODE =========================================
 configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
@@ -92,8 +94,9 @@ def linebot2():
     return 'OK'
 
 # =========================== MAIN CODE =======================================
-if __name__ == "__main__":
-    app.run()
+# Vercel 自己會處理函式呼叫，不需要你手動啟動伺服器。
+# if __name__ == "__main__":
+    # app.run()
 # if __name__ == "__main__":
     # import os
     # port = int(os.environ.get("PORT", 5000))
