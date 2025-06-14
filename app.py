@@ -6,8 +6,8 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
-CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
+# CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+# CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
 # print(CHANNEL_ACCESS_TOKEN)
 # print(CHANNEL_SECRET)
 
@@ -41,7 +41,7 @@ def linebot2():
     # json_data = json.loads(body)
 
     # 先快速响应 LINE，避免 webhook 超时
-    Thread(target=handle_event_async, args=(CHANNEL_ACCESS_TOKEN,CHANNEL_SECRET)).start()
+    Thread(target=handle_event_async, args=()).start()
     return 'OK', 200
 # # ============================== ENVIROMENT ====================================
 # from flask import Flask, request #, abort
