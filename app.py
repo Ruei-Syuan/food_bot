@@ -45,27 +45,56 @@ def linebot2():
         if not events:
             print("❌ 沒有 events，忽略這次請求")
             return 'OK'
-        # signature = request.headers['X-Line-Signature']
+        
+        event = events[0]
+        user_id = event['source']['userId']
+        tk = event['replyToken']
 
-        msg = events[0]['message']['text']
-        user_id = events[0]['source']['userId']
-        tk = events[0]['replyToken']
+        # 取得訊息文字（message 或 postback）
+        msg_type = event['type']
+        msg = ""
+        # 是msg
+        if msg_type == "message":
+            # print('msg')
+            msg = event['message']['text']
+        elif msg_type == "postback":
+            # print('postback')
+            msg = event['postback']['data']
 
-        # 狀態機邏輯
+        print(f"🟡 使用者輸入：{msg}")
+        # msg = events[0]['message']['text']
+        # user_id = events[0]['source']['userId']
+        # tk = events[0]['replyToken']
+
+        # 狀態邏輯
         state = user_states.get(user_id, {}).get('state')
         
-        # function1: use keyword find location
-        if msg=="1":
+        # --- 主功能：食客筆記 ---
+        if msg == "時刻搜尋":
+            line_bot_api.reply_message(tk, TextSendMessage(text="此功能尚未開發,謝謝!"))
+            # line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點名稱："))
+            # user_states[user_id] = {'state': 'waiting_for_title'}
+
+        elif msg == "食客筆記":
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點名稱："))
+            user_states[user_id] = {'state': 'waiting_for_title'}
+
+        elif msg == "食客回想":
             line_bot_api.reply_message(tk, TextSendMessage(text="請輸入關鍵字："))
             user_states[user_id] = {'state': 'waiting_for_keyword'}
 
-        # function2: store location
-        elif msg=="2":
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點名稱："))
-            user_states[user_id] = {'state': 'waiting_for_title'}
+        # # function1: use keyword find location
+        # if msg=="食客回想":
+        #     line_bot_api.reply_message(tk, TextSendMessage(text="請輸入關鍵字："))
+        #     user_states[user_id] = {'state': 'waiting_for_keyword'}
+
+        # # function2: store location
+        # elif msg=="食客筆記":
+        #     line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點名稱："))
+        #     user_states[user_id] = {'state': 'waiting_for_title'}
         
         # subfunction 1
-        elif state == "waiting_for_keyword":
+        if state == "waiting_for_keyword":
             location_data = get_location(msg)
             if location_data:
                 location_message = LocationSendMessage(
@@ -125,7 +154,7 @@ def linebot2():
             user_states.pop(user_id)
 
         else:
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入1(查詢)或2(新增):"))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請點選下方的食客系列"))
         # other answer
         
         
