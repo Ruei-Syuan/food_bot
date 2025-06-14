@@ -1,9 +1,15 @@
 import json
+import os
 from threading import Thread
 
 from flask import Flask, request
 
 app = Flask(__name__)
+
+CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
+# print(CHANNEL_ACCESS_TOKEN)
+# print(CHANNEL_SECRET)
 
 def handle_event_async(json_data):
     try:
@@ -29,6 +35,8 @@ def handle_event_async(json_data):
 
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
+    print(CHANNEL_ACCESS_TOKEN)
+    print(CHANNEL_SECRET)
     body = request.get_data(as_text=True)
     json_data = json.loads(body)
 
