@@ -85,7 +85,7 @@ def linebot2():
             line_bot_api.reply_message(tk, text_message)
 
     except Exception as e:
-        print('error:', e)
+        # print('error:', e)
         return 'OK'
 
     return 'OK'
