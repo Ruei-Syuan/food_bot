@@ -27,11 +27,16 @@ import sqlite3
 
 app = Flask(__name__)
 
-CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
-CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
-print(CHANNEL_ACCESS_TOKEN)
-print(CHANNEL_SECRET)
+# CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+# CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
 
+CHANNEL_SECRET = os.environ.get('CHANNEL_SECRET')
+if not CHANNEL_SECRET:
+    raise ValueError("❌ 環境變數 CHANNEL_SECRET 沒有設置，請在 Vercel 設定中確認")
+
+CHANNEL_ACCESS_TOKEN = os.environ.get('CHANNEL_ACCESS_TOKEN')
+if not CHANNEL_ACCESS_TOKEN:
+    raise ValueError("❌ 環境變數 CHANNEL_ACCESS_TOKEN 沒有設置，請在 Vercel 設定中確認")
 # ========================== FUNCTION CODE =========================================
 configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
