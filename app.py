@@ -67,16 +67,8 @@ def get_location(text):
     
 @app.route("/callback2", methods=['POST'])
 def callback2():
-    # 獲取 LINE 送來的請求
-    signature = request.headers['X-Line-Signature']
-    body = request.get_data(as_text=True)
-
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError: # type: ignore
-        abort(400)
-
-    return 'OK'
+    print("Webhook received ✅")
+    return 'OK', 200
 
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
