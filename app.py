@@ -63,7 +63,7 @@ def linebot2():
         body = request.get_data(as_text=True)
         json_data = json.loads(body)
 
-        signature = request.headers['X-Line-Signature']
+        # signature = request.headers['X-Line-Signature']
 
         msg = json_data['events'][0]['message']['text']
         tk = json_data['events'][0]['replyToken']
@@ -86,6 +86,7 @@ def linebot2():
 
     except Exception as e:
         print('error:', e)
+        return 'OK'
 
     return 'OK'
 
