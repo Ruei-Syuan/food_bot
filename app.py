@@ -76,6 +76,10 @@ def linebot2():
         body = request.get_data(as_text=True)
         json_data = json.loads(body)
 
+        events = json_data.get('events', [])
+        if not events:
+            print("❌ 沒有 events，忽略這次請求")
+            return 'OK'
         # signature = request.headers['X-Line-Signature']
 
         msg = json_data['events'][0]['message']['text']
@@ -96,8 +100,8 @@ def linebot2():
             line_bot_api.reply_message(tk, text_message)
 
     except Exception as e:
-        # print('error:', e)
-        return 'OK'
+        print('error:', e)
+        # return 'OK'
 
     return 'OK'
 

@@ -5,3 +5,6 @@
 git add .
 git commit -m "20250614"
 git push origin main
+
+<!-- ngrok 看lanuch.json port-->
+ngrok http 8080 
