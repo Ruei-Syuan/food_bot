@@ -1,5 +1,5 @@
 # ============================== ENVIROMENT ====================================
-from flask import Flask, request #, abort
+from flask import Flask, abort, request #, abort
 
 # from linebot.v3 import (
 #     WebhookHandler
@@ -27,10 +27,8 @@ import sqlite3
 
 app = Flask(__name__)
 
-# CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
-# CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
-CHANNEL_ACCESS_TOKEN = os.environ.get('CHANNEL_ACCESS_TOKEN')
-CHANNEL_SECRET = os.environ.get('CHANNEL_SECRET')
+CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
+CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
 print(CHANNEL_ACCESS_TOKEN)
 print(CHANNEL_SECRET)
 
@@ -62,6 +60,19 @@ def get_location(text):
     else:
         return False
     
+@app.route("/callback2", methods=['POST'])
+def callback2():
+    # 獲取 LINE 送來的請求
+    signature = request.headers['X-Line-Signature']
+    body = request.get_data(as_text=True)
+
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError: # type: ignore
+        abort(400)
+
+    return 'OK'
+
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
     try:
@@ -72,8 +83,6 @@ def linebot2():
 
         msg = json_data['events'][0]['message']['text']
         tk = json_data['events'][0]['replyToken']
-
-        # print('msg:', msg)
 
         location_data = get_location(msg)
 

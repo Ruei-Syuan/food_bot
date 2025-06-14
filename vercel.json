@@ -12,6 +12,10 @@
       "dest": "app.py"
     },
     {
+      "src": "/callback2",
+      "dest": "app.py"
+    },
+    {
       "src": "/",
       "dest": "app.py"
     }
