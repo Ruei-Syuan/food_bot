@@ -6,7 +6,8 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 # MessageEvent, TextMessage, 
 import json
-import sqlite3
+from API.location import get_location, save_to_db
+from linebot.v3.messaging import Configuration
 
 app = Flask(__name__)
 
@@ -32,27 +33,8 @@ def home():
     return "<h1>hello world</h1>"
 
 # ==============================================================================================
-# 建立資料庫連線
-def get_location(text):
-    conn = sqlite3.connect('LINEBOT_DB.db')  # 連接資料庫
-    cursor = conn.cursor()
-
-    # 查詢符合輸入內容的地點
-    cursor.execute("SELECT title, address, latitude, longitude FROM food_map WHERE keyword=?", (text,))
-    row = cursor.fetchone()
-    
-    conn.close()  # 關閉連線
-
-    if row:
-        return {'title': row[0], 'address': row[1], 'latitude': row[2], 'longitude': row[3]}
-    else:
-        return False
-    
-@app.route("/callback2", methods=['POST'])
-def callback2():
-    print("Webhook received ✅")
-    return 'OK', 200
-
+# 使用者狀態暫存（建議正式使用請改用資料庫或 Redis）
+user_states = {}
 @app.route("/linebot2", methods=['POST'])
 def linebot2():
     try:
@@ -65,23 +47,88 @@ def linebot2():
             return 'OK'
         # signature = request.headers['X-Line-Signature']
 
-        msg = json_data['events'][0]['message']['text']
-        tk = json_data['events'][0]['replyToken']
+        msg = events[0]['message']['text']
+        user_id = events[0]['source']['userId']
+        tk = events[0]['replyToken']
 
-        location_data = get_location(msg)
+        # 狀態機邏輯
+        state = user_states.get(user_id, {}).get('state')
+        
+        # function1: use keyword find location
+        if msg=="1":
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入關鍵字："))
+            user_states[user_id] = {'state': 'waiting_for_keyword'}
 
-        if location_data:
-            location_message = LocationSendMessage(
-                title=location_data['title'],
-                address=location_data['address'],
-                latitude=location_data['latitude'],
-                longitude=location_data['longitude']
-            )
-            line_bot_api.reply_message(tk, location_message)
+        # function2: store location
+        elif msg=="2":
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點名稱："))
+            user_states[user_id] = {'state': 'waiting_for_title'}
+        
+        # subfunction 1
+        elif state == "waiting_for_keyword":
+            location_data = get_location(msg)
+            if location_data:
+                location_message = LocationSendMessage(
+                    title=location_data['title'],
+                    address=location_data['address'],
+                    latitude=location_data['latitude'],
+                    longitude=location_data['longitude']
+                )
+                line_bot_api.reply_message(tk, location_message)
+            else:
+                line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到相關地點"))
+            user_states.pop(user_id)
+
+        # subfunction 2
+        elif state == "waiting_for_title":
+            user_states[user_id] = {'state': 'waiting_for_address'
+                                    , 'title': msg
+                                    }
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點地址："))
+
+        elif state == "waiting_for_address":
+            user_states[user_id] = {'state': 'waiting_for_latitude'
+                                    , 'title': user_states[user_id]['title']
+                                    , 'address': msg
+                                    }            
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點緯度："))
+
+        elif state == "waiting_for_latitude":
+            user_states[user_id] = {'state': 'waiting_for_longitude'
+                                    , 'title': user_states[user_id]['title']
+                                    , 'address': user_states[user_id]['address']
+                                    , 'latitude': msg
+                                    }
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點經度："))
+
+        elif state == "waiting_for_longitude":
+            user_states[user_id] = {'state': 'waiting_for_keyword2'
+                                    , 'title': user_states[user_id]['title']
+                                    , 'address': user_states[user_id]['address']
+                                    , 'latitude': user_states[user_id]['latitude']
+                                    , 'longitude': msg
+                                    }
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點關鍵字："))
+
+        elif state == "waiting_for_keyword2":
+            # 可加入更多步驟（經度、緯度、關鍵字等）
+            title = user_states[user_id]['title']
+            address = user_states[user_id]['address']
+            latitude = user_states[user_id]['latitude']
+            longitude = user_states[user_id]['longitude']
+            keyword = msg
+
+            # 可寫入資料庫
+            save_to_db(title, address, latitude, longitude, keyword)
+            print(f"✅ 景點已儲存：{title}, {address}, {latitude}, {longitude}, {keyword}")
+            line_bot_api.reply_message(tk, TextSendMessage(text=f"✅ 景點已儲存：{title}, {address}, {latitude}, {longitude}, {keyword}"))
+            user_states.pop(user_id)
+
         else:
-            text_message = TextSendMessage(text='找不到相關地點')
-            line_bot_api.reply_message(tk, text_message)
-
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入1(查詢)或2(新增):"))
+        # other answer
+        
+        
     except Exception as e:
         print('error:', e)
         
