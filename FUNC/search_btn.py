@@ -1,6 +1,7 @@
+from functools import _make_key
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
-from API.location import get_location
+from API.location import get_location, save_to_db
 # from app import line_bot_api
 
 def search(line_bot_api, tk,place_key):
@@ -71,3 +72,35 @@ def getNote(line_bot_api, tk,place_key):
         line_bot_api.reply_message(tk, location_message)
     else:
         line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到「{place_key}」的地點😢"))
+        
+def searchNote(line_bot_api, tk, place, key):
+    nominatim_url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        'q': place,
+        'format': 'json'
+    }
+    res = requests.get(nominatim_url, params=params, headers={"User-Agent": "my-linebot/1.0"})
+    data = res.json()
+
+    print(f"🟡 data：{data}")
+    if data:
+        data_content = data[0]
+        lat = float(data_content['lat'])
+        lon = float(data_content['lon'])
+        address = data_content.get('display_name', place)
+
+        # 建立訊息清單
+        # reply_messages = [
+        #     LocationSendMessage(
+        #         title=place_key,
+        #         address=address,
+        #         latitude=lat,
+        #         longitude=lon
+        #     )
+        # ]
+        print(place, address, lat, lon, key)
+        save_to_db(place, address, lat, lon, key)
+        line_bot_api.reply_message(tk, TextSendMessage(text=f"✅ 已存入「{place}」的相關資訊：{address}, {lat}, {lon}, {key}"))
+
+    else:
+        line_bot_api.reply_message(tk, TextSendMessage(text=f"❌ 找不到「{place}」的地點😢"))
