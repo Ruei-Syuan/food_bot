@@ -71,7 +71,7 @@ def linebot2():
         # --- 主功能：食客筆記 ---
         if msg == "時刻搜尋":
             # line_bot_api.reply_message(tk, TextSendMessage(text="此功能尚未開發,謝謝!"))
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入要去的地方："))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入所在地："))
             user_states[user_id] = {'state': 'waiting_for_search'}
 
         elif msg == "時刻筆記":
