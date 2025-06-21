@@ -1,4 +1,11 @@
-.vercel
+# 加一個 .gitignore 檔案，告訴 Git 哪些檔案是不能上傳的
+
+# 忽略 Vercel 部署資料夾
+.vercel/
+
+# 忽略環境設定檔
 .env
 .env.local
-__pycache__
+
+# 忽略 Python 編譯快取
+__pycache__/
