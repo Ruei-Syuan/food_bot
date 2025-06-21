@@ -1,0 +1,3 @@
+# 加一個 .gitattributes 檔案，告訴 Git 如何處理特定檔案的換行格式：
+*.env text eol=lf
+# *.js text=auto

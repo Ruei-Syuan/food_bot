@@ -6,5 +6,7 @@ git add .
 git commit -m "20250614"
 git push origin main
 
+<!-- environment -->
 <!-- ngrok 看lanuch.json port-->
-ngrok http 8080 
+python app.py
+ngrok http 5000 

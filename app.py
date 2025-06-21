@@ -22,7 +22,8 @@ if not CHANNEL_SECRET:
 CHANNEL_ACCESS_TOKEN = os.environ.get('CHANNEL_ACCESS_TOKEN')
 if not CHANNEL_ACCESS_TOKEN:
     raise ValueError("❌ 環境變數 CHANNEL_ACCESS_TOKEN 沒有設置，請在 Vercel 設定中確認")
-# ========================== FUNCTION CODE =========================================
+
+# ==================================== FUNCTION CODE ===========================================
 configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
