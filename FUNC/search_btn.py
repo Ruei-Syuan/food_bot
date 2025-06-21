@@ -65,7 +65,14 @@ def search(line_bot_api, tk,place_key):
         
 def getNote(line_bot_api, tk,place_key):
     location_data = get_location(place_key)
-    if location_data:
+
+    if not location_data:
+        # 沒有查到資料
+        line_bot_api.reply_message(tk, TextSendMessage(text=f"❌ 找不到「{place_key}」的地點😢"))
+        return
+
+    # 如果是單筆資料（dict）
+    if isinstance(location_data, dict):
         location_message = LocationSendMessage(
             title=location_data['title'],
             address=location_data['address'],
@@ -73,8 +80,32 @@ def getNote(line_bot_api, tk,place_key):
             longitude=location_data['longitude']
         )
         line_bot_api.reply_message(tk, location_message)
-    else:
-        line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到「{place_key}」的地點😢"))
+
+    # 如果是多筆資料（list）
+    elif isinstance(location_data, list):
+        location_messages = []
+        for item in location_data[:5]:  # 最多回傳 5 筆，LINE 限制
+            location_messages.append(
+                LocationSendMessage(
+                    title=item['title'],
+                    address=item['address'],
+                    latitude=item['latitude'],
+                    longitude=item['longitude']
+                )
+            )
+        line_bot_api.reply_message(tk, location_messages)
+
+    # location_data = get_location(place_key)
+    # if location_data:
+    #     location_message = LocationSendMessage(
+    #         title=location_data['title'],
+    #         address=location_data['address'],
+    #         latitude=location_data['latitude'],
+    #         longitude=location_data['longitude']
+    #     )
+    #     line_bot_api.reply_message(tk, location_message)
+    # else:
+    #     line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到「{place_key}」的地點😢"))
         
 def searchNote(line_bot_api, tk, place, key):
     nominatim_url = "https://nominatim.openstreetmap.org/search"
