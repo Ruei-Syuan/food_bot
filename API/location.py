@@ -1,9 +1,22 @@
 
+import os
 import sqlite3
+
+# 設定資料庫路徑（Render 使用 /tmp）
+DB_PATH = os.path.join("/tmp", "LINEBOT_DB.db")
+
+# 如果資料庫不存在，可從原始位置複製過來
+if not os.path.exists(DB_PATH):
+    import shutil
+    shutil.copy("LINEBOT_DB.db", DB_PATH)  # 假設你專案中原本有一份 readonly 資料庫
+
+# 使用資料庫
+def get_connection():
+    return get_connection(DB_PATH)
 
 # 建立資料表（如果尚未存在）
 def create_table():
-    conn = sqlite3.connect('LINEBOT_DB.db')
+    conn = get_connection('LINEBOT_DB.db')
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -21,7 +34,7 @@ def create_table():
     
 # 根據關鍵字搜尋資料庫
 def get_location(text):
-    conn = sqlite3.connect('LINEBOT_DB.db')  # 連接資料庫
+    conn = get_connection('LINEBOT_DB.db')  # 連接資料庫
     cursor = conn.cursor()
 
     # 查詢符合輸入內容的地點
@@ -58,7 +71,7 @@ def get_location(text):
     #     return False
 
 def save_to_db(title, address, latitude, longitude, keyword):
-    conn = sqlite3.connect('LINEBOT_DB.db')
+    conn = get_connection('LINEBOT_DB.db')
     cursor = conn.cursor()
     cursor.execute('''
             INSERT INTO food_map (title, address, latitude, longitude, keyword)
