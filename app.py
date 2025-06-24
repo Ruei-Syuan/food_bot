@@ -12,9 +12,6 @@ from FUNC.search_btn import getNote, google_command, search, storeNote
 
 app = Flask(__name__)
 
-# CHANNEL_ACCESS_TOKEN = os.getenv('CHANNEL_ACCESS_TOKEN')
-# CHANNEL_SECRET = os.getenv('CHANNEL_SECRET')
-
 CHANNEL_SECRET = os.environ.get('CHANNEL_SECRET')
 if not CHANNEL_SECRET:
     raise ValueError("❌ 環境變數 CHANNEL_SECRET 沒有設置，請在 Vercel 設定中確認")
@@ -89,10 +86,8 @@ def linebot2():
         
         # subfunction 1
         elif state == "waiting_for_google_search":
-            print("TEST")
             print(msg)
-
-            # google_command(line_bot_api,tk,msg)
+            google_command(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
         # subfunction 2
