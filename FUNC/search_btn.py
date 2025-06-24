@@ -1,10 +1,10 @@
-# from functools import _make_key
+import os
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 from API.location import create_table, save_to_db, get_location
 from linebot.models import FlexSendMessage # 滑動選單
 
-GOOGLE_MAP_API_KEY = "AIzaSyCFN2Oz9qdBqecHZkRHDzSSUyi1eFWguqg"
+GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY"),
 
 # 關鍵字查經緯度
 def geocode_text(query):
