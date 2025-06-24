@@ -73,6 +73,7 @@ def getNote(line_bot_api, tk,place_key):
 
     # 如果是單筆資料（dict）
     if isinstance(location_data, dict):
+        print(f"🟡 是單筆資料")
         location_message = LocationSendMessage(
             title=location_data['title'],
             address=location_data['address'],
@@ -83,6 +84,7 @@ def getNote(line_bot_api, tk,place_key):
 
     # 如果是多筆資料（list）
     elif isinstance(location_data, list):
+        print(f"🟡 是多筆資料")
         location_messages = []
         for item in location_data[:5]:  # 最多回傳 5 筆，LINE 限制
             location_messages.append(
