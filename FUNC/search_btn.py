@@ -44,7 +44,7 @@ def get_street_view_image_url(latitude, longitude):
             # 沒有街景則回傳預設圖片
             return DEFAULT_IMAGE_URL
     except Exception as e:
-        print(f"Street View 檢查失敗: {e}")
+        # print(f"Street View 檢查失敗: {e}")
         return DEFAULT_IMAGE_URL
     
 def google_command(line_bot_api, tk, place_key, radius=500):
@@ -83,7 +83,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
-        print(f"[API ERROR] {e}")
+        # print(f"[API ERROR] {e}")
         line_bot_api.reply_message(tk, TextSendMessage(text="Google 地圖服務發生錯誤，請稍後再試。"))
         return
 
@@ -97,7 +97,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
         if rating <= 4: #大於4星等才回傳
             continue
         
-        print(place)
+        # print(place)
         results.append({
             "name": place.get("displayName", {}).get("text", "未知"),
             "address": place.get("formattedAddress", "未知地址"),
@@ -293,7 +293,7 @@ def storeNote(line_bot_api, tk, place, key):
         lon = float(data_content['lon'])
         address = data_content.get('display_name', place)
 
-        print(f"🟡 data：{place}, {address}, {lat}, {lon}, {key}")
+        # print(f"🟡 data：{place}, {address}, {lat}, {lon}, {key}")
         save_to_db(place, address, lat, lon, key)
         line_bot_api.reply_message(tk, TextSendMessage(text=f"✅ 已存入「{place}」的相關資訊：{address}, {lat}, {lon}, {key}"))
 

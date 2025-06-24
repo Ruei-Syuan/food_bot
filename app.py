@@ -42,7 +42,7 @@ def linebot2():
 
         events = json_data.get('events', [])
         if not events:
-            print("❌ 沒有 events，忽略這次請求")
+            # print("❌ 沒有 events，忽略這次請求")
             return 'OK'
         
         event = events[0]
@@ -86,7 +86,6 @@ def linebot2():
         
         # subfunction 1
         elif state == "waiting_for_google_search":
-            # print(msg)
             google_command(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
