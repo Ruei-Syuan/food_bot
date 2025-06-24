@@ -4,7 +4,8 @@ from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 from API.location import create_table, save_to_db, get_location
 from linebot.models import FlexSendMessage # 滑動選單
 
-GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY"),
+GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
+DEFAULT_IMAGE_URL = "https://via.placeholder.com/640x400/eeeeee/D7C3AE?text=沒有街景"
 
 # 關鍵字查經緯度
 def geocode_text(query):
@@ -18,8 +19,33 @@ def geocode_text(query):
         location = data["results"][0]["geometry"]["location"]
         return location["lat"], location["lng"]
     return None, None
-from linebot.models import FlexSendMessage
 
+def get_street_view_image_url(latitude, longitude):
+    metadata_url = (
+        f"https://maps.googleapis.com/maps/api/streetview/metadata"
+        f"?location={latitude},{longitude}"
+        f"&key={GOOGLE_MAP_API_KEY}"
+    )
+    
+    try:
+        response = requests.get(metadata_url)
+        data = response.json()
+        if data.get("status") == "OK":
+            # 有街景就回傳街景圖片 URL
+            return (
+                f"https://maps.googleapis.com/maps/api/streetview"
+                f"?size=640x400"
+                f"&location={latitude},{longitude}"
+                f"&fov=80&heading=0&pitch=0"
+                f"&key={GOOGLE_MAP_API_KEY}"
+            )
+        else:
+            # 沒有街景則回傳預設圖片
+            return DEFAULT_IMAGE_URL
+    except Exception as e:
+        print(f"Street View 檢查失敗: {e}")
+        return DEFAULT_IMAGE_URL
+    
 def google_command(line_bot_api, tk, place_key, radius=500):
     if not isinstance(GOOGLE_MAP_API_KEY, str) or not GOOGLE_MAP_API_KEY:
         raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
@@ -90,7 +116,8 @@ def google_command(line_bot_api, tk, place_key, radius=500):
             "size": "kilo",
             "hero": {
                 "type": "image",
-                "url": "https://maps.gstatic.com/tactile/pane/default_geocode-2x.png",  # 預設餐廳圖
+                "url": get_street_view_image_url(r['latitude'], r['longitude']), #改成街景圖
+                # "https://maps.gstatic.com/tactile/pane/default_geocode-2x.png",  # 預設餐廳圖
                 "size": "full",
                 "aspectRatio": "20:13",
                 "aspectMode": "cover"
