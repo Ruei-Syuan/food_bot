@@ -1,10 +1,10 @@
-import datetime
 import json
 import os
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 from API.location import create_table, save_to_db, get_location
 from linebot.models import FlexSendMessage # 滑動選單
+from datetime import datetime
 
 GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
 DEFAULT_IMAGE_URL = "https://fakeimg.pl/640x400/4B2E2E/ffffff/?text=No+Street+View"
