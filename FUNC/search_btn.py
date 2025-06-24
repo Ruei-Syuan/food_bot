@@ -109,14 +109,14 @@ def storeNote(line_bot_api, tk, place, key):
     res = requests.get(nominatim_url, params=params, headers={"User-Agent": "my-linebot/1.0"})
     data = res.json()
 
-    print(f"🟡 data：{data}")
+    # print(f"🟡 data：{data}")
     if data:
         data_content = data[0]
         lat = float(data_content['lat'])
         lon = float(data_content['lon'])
         address = data_content.get('display_name', place)
 
-        print(place, address, lat, lon, key)
+        print(f"🟡 data：{place}, {address}, {lat}, {lon}, {key}")
         save_to_db(place, address, lat, lon, key)
         line_bot_api.reply_message(tk, TextSendMessage(text=f"✅ 已存入「{place}」的相關資訊：{address}, {lat}, {lon}, {key}"))
 
