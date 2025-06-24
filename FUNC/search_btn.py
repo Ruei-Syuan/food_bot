@@ -5,10 +5,11 @@ from API.location import create_table, save_to_db, get_location
 from linebot.models import FlexSendMessage # 滑動選單
 
 GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
-DEFAULT_IMAGE_URL = "https://via.placeholder.com/640x400/eeeeee/D7C3AE?text=沒有街景"
+DEFAULT_IMAGE_URL = "https://via.placeholder.com/640x400/eeeeee/D7C3AE?text=None"
 
 # 關鍵字查經緯度
 def geocode_text(query):
+    print("GOOGLE_MAP_API_KEY:", GOOGLE_MAP_API_KEY)
     # if not check_api_limit():
     #     return None, None
 

@@ -7,7 +7,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 import json
 from linebot.v3.messaging import Configuration
-from API.location import save_to_db
+# from API.location import save_to_db
 from FUNC.search_btn import getNote, google_command, search, storeNote
 
 app = Flask(__name__)
@@ -89,6 +89,9 @@ def linebot2():
         
         # subfunction 1
         elif state == "waiting_for_google_search":
+            print("TEST")
+            print(msg)
+
             google_command(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
