@@ -10,7 +10,7 @@ GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
 DEFAULT_IMAGE_URL = "https://fakeimg.pl/640x400/4B2E2E/ffffff/?text=No+Street+View"
 
 API_USAGE_FILE = "api_usage.json"
-DAILY_API_LIMIT = 2  # 根據你的 Google Maps 免費額度調整
+DAILY_API_LIMIT = 50  # 根據你的 Google Maps 免費額度調整
 
 # 檢核 google api 使用次數
 def check_and_increment_api_usage():
