@@ -8,7 +8,7 @@ from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 import json
 from linebot.v3.messaging import Configuration
 from API.location import save_to_db
-from FUNC.search_btn import getNote, search, searchNote
+from FUNC.search_btn import getNote, search, storeNote
 
 app = Flask(__name__)
 
@@ -100,7 +100,7 @@ def linebot2():
             line_bot_api.reply_message(tk, TextSendMessage(text="請輸入餐廳名稱："))
 
         elif state == "waiting_for_note":
-            searchNote(line_bot_api,tk,msg,user_states[user_id]['title'])
+            storeNote(line_bot_api,tk,msg,user_states[user_id]['title'])
             user_states.pop(user_id)
 
         # elif state == "waiting_for_address":

@@ -73,7 +73,7 @@ def getNote(line_bot_api, tk,place_key):
 
     # 如果是單筆資料（dict）
     if isinstance(location_data, dict):
-        print(f"🟡 是單筆資料")
+        # print(f"🟡 是單筆資料")
         location_message = LocationSendMessage(
             title=location_data['title'],
             address=location_data['address'],
@@ -84,7 +84,7 @@ def getNote(line_bot_api, tk,place_key):
 
     # 如果是多筆資料（list）
     elif isinstance(location_data, list):
-        print(f"🟡 是多筆資料")
+        # print(f"🟡 是多筆資料")
         location_messages = []
         for item in location_data[:5]:  # 最多回傳 5 筆，LINE 限制
             location_messages.append(
@@ -96,20 +96,8 @@ def getNote(line_bot_api, tk,place_key):
                 )
             )
         line_bot_api.reply_message(tk, location_messages)
-
-    # location_data = get_location(place_key)
-    # if location_data:
-    #     location_message = LocationSendMessage(
-    #         title=location_data['title'],
-    #         address=location_data['address'],
-    #         latitude=location_data['latitude'],
-    #         longitude=location_data['longitude']
-    #     )
-    #     line_bot_api.reply_message(tk, location_message)
-    # else:
-    #     line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到「{place_key}」的地點😢"))
         
-def searchNote(line_bot_api, tk, place, key):
+def storeNote(line_bot_api, tk, place, key):
     # 建表（只需執行一次）
     create_table()
 

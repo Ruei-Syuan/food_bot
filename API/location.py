@@ -2,6 +2,7 @@ import os
 import sqlite3
 import shutil
 
+
 # 取得連線：Render 上的 SQLite 寫入路徑需在 /tmp/
 def get_connection(filename="LINEBOT_DB.db"):
     tmp_db_path = os.path.join("/tmp", filename)
