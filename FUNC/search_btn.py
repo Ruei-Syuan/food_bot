@@ -52,9 +52,9 @@ def google_command(line_bot_api, tk, place_key, radius=500):
     if not isinstance(GOOGLE_MAP_API_KEY, str) or not GOOGLE_MAP_API_KEY:
         raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
 
-    print("latitude?")
+    # print("latitude?")
     latitude, longitude = geocode_text(place_key)
-    print(latitude, longitude)
+    # print(latitude, longitude)
 
     url = "https://places.googleapis.com/v1/places:searchNearby"
     headers = {
@@ -78,7 +78,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
                 "radius": float(radius)
             }
         },
-        "maxResultCount": 10
+        "maxResultCount": 5 #卡5筆
     }
 
     try:
@@ -99,11 +99,14 @@ def google_command(line_bot_api, tk, place_key, radius=500):
         rating = place.get("rating", 0)
         if rating <= 4: #大於4星等才回傳
             continue
-
+        
+        print(place)
         results.append({
             "name": place.get("displayName", {}).get("text", "未知"),
             "address": place.get("formattedAddress", "未知地址"),
             "rating": rating,
+            "latitude": place.get("latitude", "未知緯度"),
+            "longitude": place.get("latitude", "未知經度"),
             "user_ratings_total": place.get("userRatingCount", 0),
             "google_maps_link": f"https://www.google.com/maps/place/?q=place_id:{place.get('id')}"
         })
