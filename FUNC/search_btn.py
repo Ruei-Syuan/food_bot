@@ -18,6 +18,7 @@ def geocode_text(query):
     if data.get("results"):
         location = data["results"][0]["geometry"]["location"]
         return location["lat"], location["lng"]
+    
     return None, None
 
 def get_street_view_image_url(latitude, longitude):
@@ -51,6 +52,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
         raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
 
     latitude, longitude = geocode_text(place_key)
+    print(latitude, longitude)
 
     url = "https://places.googleapis.com/v1/places:searchNearby"
     headers = {
@@ -93,7 +95,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
     results = []
     for place in data["places"]:
         rating = place.get("rating", 0)
-        if rating < 4: #大於4星等才回傳
+        if rating <= 4: #大於4星等才回傳
             continue
 
         results.append({
