@@ -2,6 +2,155 @@
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 from API.location import create_table, save_to_db, get_location
+from linebot.models import FlexSendMessage # 滑動選單
+
+GOOGLE_MAP_API_KEY = "AIzaSyCFN2Oz9qdBqecHZkRHDzSSUyi1eFWguqg"
+
+# 關鍵字查經緯度
+def geocode_text(query):
+    # if not check_api_limit():
+    #     return None, None
+
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?address={query}&key={GOOGLE_MAP_API_KEY}"
+    resp = requests.get(url)
+    data = resp.json()
+    if data.get("results"):
+        location = data["results"][0]["geometry"]["location"]
+        return location["lat"], location["lng"]
+    return None, None
+from linebot.models import FlexSendMessage
+
+def google_command(line_bot_api, tk, place_key, radius=500):
+    if not isinstance(GOOGLE_MAP_API_KEY, str) or not GOOGLE_MAP_API_KEY:
+        raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
+
+    latitude, longitude = geocode_text(place_key)
+
+    url = "https://places.googleapis.com/v1/places:searchNearby"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_MAP_API_KEY,
+        "X-Goog-FieldMask": (
+            "places.displayName,"
+            "places.formattedAddress,"
+            "places.rating,"
+            "places.userRatingCount,"
+            "places.id,"
+            "places.location"
+        )
+    }
+
+    payload = {
+        "includedTypes": ["restaurant"],
+        "locationRestriction": {
+            "circle": {
+                "center": {"latitude": latitude, "longitude": longitude},
+                "radius": float(radius)
+            }
+        },
+        "maxResultCount": 10
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as e:
+        print(f"[API ERROR] {e}")
+        line_bot_api.reply_message(tk, TextSendMessage(text="Google 地圖服務發生錯誤，請稍後再試。"))
+        return
+
+    if "places" not in data:
+        line_bot_api.reply_message(tk, TextSendMessage(text=f"找不到「{place_key}」附近的餐廳資訊。"))
+        return
+
+    results = []
+    for place in data["places"]:
+        rating = place.get("rating", 0)
+        if rating < 4: #大於4星等才回傳
+            continue
+
+        results.append({
+            "name": place.get("displayName", {}).get("text", "未知"),
+            "address": place.get("formattedAddress", "未知地址"),
+            "rating": rating,
+            "user_ratings_total": place.get("userRatingCount", 0),
+            "google_maps_link": f"https://www.google.com/maps/place/?q=place_id:{place.get('id')}"
+        })
+
+    if not results:
+        line_bot_api.reply_message(tk, TextSendMessage(text=f"找不到「{place_key}」附近評價高的餐廳😢"))
+        return
+
+    # 建立 Flex Message bubbles
+    bubbles = []
+    for r in results[:5]:  # 最多 5 個 bubble
+        bubble = {
+            "type": "bubble",
+            "size": "kilo",
+            "hero": {
+                "type": "image",
+                "url": "https://maps.gstatic.com/tactile/pane/default_geocode-2x.png",  # 預設餐廳圖
+                "size": "full",
+                "aspectRatio": "20:13",
+                "aspectMode": "cover"
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": r['name'],
+                        "weight": "bold",
+                        "size": "lg",
+                        "wrap": True
+                    },
+                    {
+                        "type": "text",
+                        "text": f"⭐ {r['rating']}  |  {r['user_ratings_total']} 評價",
+                        "size": "sm",
+                        "color": "#999999",
+                        "margin": "md"
+                    },
+                    {
+                        "type": "text",
+                        "text": r['address'],
+                        "wrap": True,
+                        "size": "sm",
+                        "margin": "md"
+                    }
+                ]
+            },
+            "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "sm",
+                "contents": [
+                    {
+                        "type": "button",
+                        "style": "link",
+                        "height": "sm",
+                        "action": {
+                            "type": "uri",
+                            "label": "在 Google Maps 查看",
+                            "uri": r['google_maps_link']
+                        }
+                    }
+                ],
+                "flex": 0
+            }
+        }
+        bubbles.append(bubble)
+
+    flex_message = FlexSendMessage(
+        alt_text=f"「{place_key}」附近的美食推薦",
+        contents={
+            "type": "carousel",
+            "contents": bubbles
+        }
+    )
+    line_bot_api.reply_message(tk, flex_message)
 
 def search(line_bot_api, tk,place_key):
     nominatim_url = "https://nominatim.openstreetmap.org/search"
@@ -59,9 +208,6 @@ def search(line_bot_api, tk,place_key):
         reply_messages.append(TextSendMessage(text=f"「{place_key}」附近找不到具名餐廳😢"))
 
     line_bot_api.reply_message(tk, reply_messages)
-
-    # else:
-        # line_bot_api.reply_message(tk, TextSendMessage(text=f"❌ 找不到「{place_key}」的地點😢"))
         
 def getNote(line_bot_api, tk,place_key):
     location_data = get_location(place_key)

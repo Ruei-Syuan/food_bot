@@ -8,7 +8,7 @@ from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
 import json
 from linebot.v3.messaging import Configuration
 from API.location import save_to_db
-from FUNC.search_btn import getNote, search, storeNote
+from FUNC.search_btn import getNote, google_command, search, storeNote
 
 app = Flask(__name__)
 
@@ -69,30 +69,40 @@ def linebot2():
         state = user_states.get(user_id, {}).get('state')
         
         # --- 主功能：食客筆記 ---
-        if msg == "時刻搜尋":
+        if msg == "時刻超讚推薦":
             # line_bot_api.reply_message(tk, TextSendMessage(text="此功能尚未開發,謝謝!"))
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入所在地："))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入要去的地方："))
+            user_states[user_id] = {'state': 'waiting_for_google_search'}
+            
+        elif msg == "時刻搜尋":
+            # line_bot_api.reply_message(tk, TextSendMessage(text="此功能尚未開發,謝謝!"))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入要去的地方："))
             user_states[user_id] = {'state': 'waiting_for_search'}
 
         elif msg == "時刻筆記":
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入關鍵字："))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入要新增筆記的關鍵字："))
             user_states[user_id] = {'state': 'waiting_for_title'}
 
         elif msg == "時刻回想":
-            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入關鍵字："))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請輸入要回想的關鍵字："))
             user_states[user_id] = {'state': 'waiting_for_keyword'}
         
         # subfunction 1
+        elif state == "waiting_for_google_search":
+            google_command(line_bot_api,tk,msg)
+            user_states.pop(user_id)
+
+        # subfunction 2
         elif state == "waiting_for_search":
             search(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
-        # subfunction 2
+        # subfunction 3
         elif state == "waiting_for_keyword":
             getNote(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
-        # subfunction 3        
+        # subfunction 4        
         elif state == "waiting_for_title":
             user_states[user_id] = {'state': 'waiting_for_note'
                                     , 'title': msg
@@ -143,7 +153,7 @@ def linebot2():
 
         # others 
         else:
-            line_bot_api.reply_message(tk, TextSendMessage(text="請點選下方的食客系列"))
+            line_bot_api.reply_message(tk, TextSendMessage(text="請點選下方【食客助手】"))
         # other answer
         
         
