@@ -5,7 +5,7 @@ from API.location import create_table, save_to_db, get_location
 from linebot.models import FlexSendMessage # 滑動選單
 
 GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
-DEFAULT_IMAGE_URL = "https://via.placeholder.com/640x400/eeeeee/D7C3AE?text=None"
+DEFAULT_IMAGE_URL = "https://fakeimg.pl/640x400/4B2E2E/ffffff/?text=No+Street+View"
 
 # 關鍵字查經緯度
 def geocode_text(query):
@@ -102,8 +102,8 @@ def google_command(line_bot_api, tk, place_key, radius=500):
             "name": place.get("displayName", {}).get("text", "未知"),
             "address": place.get("formattedAddress", "未知地址"),
             "rating": rating,
-            "latitude": place.get("latitude", "未知緯度"),
-            "longitude": place.get("longitude", "未知經度"),
+            "latitude": place.get("location", {}).get("latitude", "未知緯度"),
+            "longitude": place.get("location", {}).get("longitude", "未知經度"),
             "user_ratings_total": place.get("userRatingCount", 0),
             "google_maps_link": f"https://www.google.com/maps/place/?q=place_id:{place.get('id')}"
         })
