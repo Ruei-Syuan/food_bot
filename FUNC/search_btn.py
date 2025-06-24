@@ -9,7 +9,6 @@ DEFAULT_IMAGE_URL = "https://via.placeholder.com/640x400/eeeeee/D7C3AE?text=None
 
 # 關鍵字查經緯度
 def geocode_text(query):
-    print("GOOGLE_MAP_API_KEY:", GOOGLE_MAP_API_KEY)
     # if not check_api_limit():
     #     return None, None
 
@@ -52,9 +51,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
     if not isinstance(GOOGLE_MAP_API_KEY, str) or not GOOGLE_MAP_API_KEY:
         raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
 
-    # print("latitude?")
     latitude, longitude = geocode_text(place_key)
-    # print(latitude, longitude)
 
     url = "https://places.googleapis.com/v1/places:searchNearby"
     headers = {
