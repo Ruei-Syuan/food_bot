@@ -1,24 +1,25 @@
-
 import os
 import sqlite3
+import shutil
 
-# 設定資料庫路徑（Render 使用 /tmp）
-DB_PATH = os.path.join("/tmp", "LINEBOT_DB.db")
+# 取得連線：Render 上的 SQLite 寫入路徑需在 /tmp/
+def get_connection(filename="LINEBOT_DB.db"):
+    tmp_db_path = os.path.join("/tmp", filename)
 
-# 如果資料庫不存在，可從原始位置複製過來
-if not os.path.exists(DB_PATH):
-    import shutil
-    shutil.copy("LINEBOT_DB.db", DB_PATH)  # 假設你專案中原本有一份 readonly 資料庫
+    # 如果 /tmp 中沒有，就從專案根目錄複製一份過去（唯讀 → 可寫）
+    if not os.path.exists(tmp_db_path):
+        if os.path.exists(filename):
+            shutil.copy(filename, tmp_db_path)
+        else:
+            # 若本地也沒有，就在 /tmp 中建立新資料庫
+            open(tmp_db_path, 'a').close()
 
-# 使用資料庫
-def get_connection():
-    return get_connection(DB_PATH)
+    return sqlite3.connect(tmp_db_path)
 
-# 建立資料表（如果尚未存在）
+# 建立資料表
 def create_table():
-    conn = get_connection('LINEBOT_DB.db')
+    conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS food_map (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,52 +32,39 @@ def create_table():
     ''')
     conn.commit()
     conn.close()
-    
-# 根據關鍵字搜尋資料庫
-def get_location(text):
-    conn = get_connection('LINEBOT_DB.db')  # 連接資料庫
+
+# 儲存資料到 DB
+def save_to_db(title, address, latitude, longitude, keyword):
+    conn = get_connection()
     cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO food_map (title, address, latitude, longitude, keyword)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (title, address, float(latitude), float(longitude), keyword))
+    conn.commit()
+    conn.close()
 
-    # 查詢符合輸入內容的地點
-    # cursor.execute("SELECT title, address, latitude, longitude FROM food_map WHERE keyword=?", (text,))
-    # 改模糊比對
-    cursor.execute("SELECT title, address, latitude, longitude FROM food_map WHERE keyword LIKE ?", ('%' + text + '%',))
-    rows = cursor.fetchone()
+# 根據關鍵字模糊搜尋地點
+def get_location(text):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT title, address, latitude, longitude
+        FROM food_map
+        WHERE keyword LIKE ?
+    ''', ('%' + text + '%',))
+    rows = cursor.fetchall()
+    conn.close()
 
-    conn.close()  # 關閉連線
-
-    # 如果有找到資料
     if rows:
         results = []
         for row in rows:
-            result = {
+            results.append({
                 'title': row[0],
                 'address': row[1],
                 'latitude': row[2],
                 'longitude': row[3]
-            }
-            results.append(result)
-        
-        # 如果只有一筆，回傳單一 dict；多筆則回傳 list
-        if len(results) == 1:
-            return results[0]
-        else:
-            return results
+            })
+        return results[0] if len(results) == 1 else results
     else:
         return False
-    
-    # if row:
-    #     return {'title': row[0], 'address': row[1], 'latitude': row[2], 'longitude': row[3]}
-    # else:
-    #     return False
-
-def save_to_db(title, address, latitude, longitude, keyword):
-    conn = get_connection('LINEBOT_DB.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-            INSERT INTO food_map (title, address, latitude, longitude, keyword)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (title, address, float(latitude), float(longitude), keyword))
-    # cursor.execute('INSERT INTO food_map (title, address) VALUES (?, ?)', (title, address))
-    conn.commit()
-    conn.close()

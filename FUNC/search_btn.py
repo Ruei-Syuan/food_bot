@@ -1,7 +1,7 @@
 # from functools import _make_key
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
-from API.location import get_location, save_to_db
+from API.location import create_table, save_to_db, get_location
 
 def search(line_bot_api, tk,place_key):
     nominatim_url = "https://nominatim.openstreetmap.org/search"
@@ -110,6 +110,9 @@ def getNote(line_bot_api, tk,place_key):
     #     line_bot_api.reply_message(tk, TextSendMessage(text="❌ 找不到「{place_key}」的地點😢"))
         
 def searchNote(line_bot_api, tk, place, key):
+    # 建表（只需執行一次）
+    create_table()
+
     nominatim_url = "https://nominatim.openstreetmap.org/search"
     params = {
         'q': place,
