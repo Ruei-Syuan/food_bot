@@ -92,7 +92,7 @@ def linebot2():
             print("TEST")
             print(msg)
 
-            google_command(line_bot_api,tk,msg)
+            # google_command(line_bot_api,tk,msg)
             user_states.pop(user_id)
 
         # subfunction 2
@@ -115,44 +115,6 @@ def linebot2():
         elif state == "waiting_for_note":
             storeNote(line_bot_api,tk,msg,user_states[user_id]['title'])
             user_states.pop(user_id)
-
-        # elif state == "waiting_for_address":
-        #     user_states[user_id] = {'state': 'waiting_for_latitude'
-        #                             , 'title': user_states[user_id]['title']
-        #                             , 'address': msg
-        #                             }            
-        #     line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點緯度："))
-
-        # elif state == "waiting_for_latitude":
-        #     user_states[user_id] = {'state': 'waiting_for_longitude'
-        #                             , 'title': user_states[user_id]['title']
-        #                             , 'address': user_states[user_id]['address']
-        #                             , 'latitude': msg
-        #                             }
-        #     line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點經度："))
-
-        # elif state == "waiting_for_longitude":
-        #     user_states[user_id] = {'state': 'waiting_for_keyword2'
-        #                             , 'title': user_states[user_id]['title']
-        #                             , 'address': user_states[user_id]['address']
-        #                             , 'latitude': user_states[user_id]['latitude']
-        #                             , 'longitude': msg
-        #                             }
-        #     line_bot_api.reply_message(tk, TextSendMessage(text="請輸入景點關鍵字："))
-
-        # elif state == "waiting_for_keyword2":
-        #     # 可加入更多步驟（經度、緯度、關鍵字等）
-        #     title = user_states[user_id]['title']
-        #     address = user_states[user_id]['address']
-        #     latitude = user_states[user_id]['latitude']
-        #     longitude = user_states[user_id]['longitude']
-        #     keyword = msg
-
-        #     # 可寫入資料庫
-        #     save_to_db(title, address, latitude, longitude, keyword)
-        #     print(f"✅ 景點已儲存：{title}, {address}, {latitude}, {longitude}, {keyword}")
-        #     line_bot_api.reply_message(tk, TextSendMessage(text=f"✅ 景點已儲存：{title}, {address}, {latitude}, {longitude}, {keyword}"))
-        #     user_states.pop(user_id)
 
         # others 
         else:
