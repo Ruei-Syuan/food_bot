@@ -103,7 +103,7 @@ def google_command(line_bot_api, tk, place_key, radius=500):
             "address": place.get("formattedAddress", "未知地址"),
             "rating": rating,
             "latitude": place.get("latitude", "未知緯度"),
-            "longitude": place.get("latitude", "未知經度"),
+            "longitude": place.get("longitude", "未知經度"),
             "user_ratings_total": place.get("userRatingCount", 0),
             "google_maps_link": f"https://www.google.com/maps/place/?q=place_id:{place.get('id')}"
         })
