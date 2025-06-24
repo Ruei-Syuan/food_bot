@@ -1,3 +1,5 @@
+import datetime
+import json
 import os
 import requests
 from linebot.models import TextSendMessage,TextSendMessage, LocationSendMessage
@@ -6,6 +8,29 @@ from linebot.models import FlexSendMessage # 滑動選單
 
 GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
 DEFAULT_IMAGE_URL = "https://fakeimg.pl/640x400/4B2E2E/ffffff/?text=No+Street+View"
+
+API_USAGE_FILE = "api_usage.json"
+DAILY_API_LIMIT = 2  # 根據你的 Google Maps 免費額度調整
+
+# 檢核 google api 使用次數
+def check_and_increment_api_usage():
+    today = datetime.now().strftime("%Y-%m-%d")
+    if os.path.exists(API_USAGE_FILE):
+        with open(API_USAGE_FILE, "r") as f:
+            usage_data = json.load(f)
+    else:
+        usage_data = {}
+
+    today_count = usage_data.get(today, 0)
+    if today_count >= DAILY_API_LIMIT:
+        return False  # 超過限制
+
+    usage_data[today] = today_count + 1
+
+    with open(API_USAGE_FILE, "w") as f:
+        json.dump(usage_data, f)
+
+    return True
 
 # 關鍵字查經緯度
 def geocode_text(query):
@@ -48,6 +73,13 @@ def get_street_view_image_url(latitude, longitude):
         return DEFAULT_IMAGE_URL
     
 def google_command(line_bot_api, tk, place_key, radius=500):
+    if not check_and_increment_api_usage():
+        line_bot_api.reply_message(
+            tk,
+            TextSendMessage(text="Google Map 搜尋已抵達當日上限次數，請明天再試 🥲")
+        )
+        return
+    
     if not isinstance(GOOGLE_MAP_API_KEY, str) or not GOOGLE_MAP_API_KEY:
         raise ValueError("GOOGLE_MAP_API_KEY 未正確設置")
 
