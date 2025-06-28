@@ -32,16 +32,29 @@ def create_table():
     conn.close()
 
 # 儲存資料到 PostgreSQL
+# def save_to_db(title, address, latitude, longitude, keyword):
+#     conn = get_connection()
+#     cursor = conn.cursor()
+#     cursor.execute('''
+#         INSERT INTO food_map (title, address, latitude, longitude, keyword)
+#         VALUES (%s, %s, %s, %s, %s)
+#     ''', (title, address, float(latitude), float(longitude), keyword))
+#     conn.commit()
+#     cursor.close()
+#     conn.close()
 def save_to_db(title, address, latitude, longitude, keyword):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO food_map (title, address, latitude, longitude, keyword)
-        VALUES (%s, %s, %s, %s, %s)
-    ''', (title, address, float(latitude), float(longitude), keyword))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    try:
+        cursor.execute('''
+            INSERT INTO food_map (title, address, latitude, longitude, keyword)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (title, keyword) DO NOTHING
+        ''', (title, address, float(latitude), float(longitude), keyword))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 # 根據關鍵字模糊搜尋地點
 def get_location(text):
