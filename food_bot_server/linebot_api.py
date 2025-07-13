@@ -17,9 +17,10 @@ from linebot.v3.messaging import (
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
+    Message,
 )
 
-from FUNC.search_btn import getNote, google_command, search
+from FUNC.search_btn import google_command, search
 from . import services
 
 def ask_for_title(
@@ -35,7 +36,7 @@ MESSAGE_ACTION_MAPPING: dict[str, tuple[str, Callable]] = {
     "時刻超讚推薦": ("請輸入要去的地方", google_command),
     "時刻搜尋": ("請輸入要去的地方", search),
     "時刻筆記": ("請輸入要新增筆記的關鍵字：", ask_for_title),
-    "時刻回想": ("請輸入要回想的關鍵字：", getNote),
+    "時刻回想": ("請輸入要回想的關鍵字：", services.get_note),
 }
 
 def register_handlers(handler: WebhookHandler):
@@ -76,14 +77,23 @@ def init_app(app: Flask):
     app.line_api_client_maker = lambda: ApiClient(config)
     app.linebot_db = dict() # dict[str, Callable], str for user_id
 
-    def _reply_text_message(reply_token: str, reply_msg: str):
+    def _reply_text_message(
+            reply_token: str,
+            reply_msg: str | Message | list[Message],
+        ):
+        if isinstance(reply_msg, str):
+            messages = [TextMessage(text=reply_msg)],
+        else:
+            messages = [reply_msg] if isinstance(reply_msg, Message) else reply_msg
+
         with current_app.line_api_client_maker() as api_client:
             MessagingApi(api_client).reply_message(
                 ReplyMessageRequest(
                     replyToken=reply_token,
-                    messages=[TextMessage(text=reply_msg)]
+                    messages=messages,
                 )
             )
+
     app.linebot_reply_message = _reply_text_message
 
     return

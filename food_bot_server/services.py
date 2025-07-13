@@ -1,7 +1,13 @@
 from flask import current_app as app
 import requests
 
-from API.location import create_table, save_to_db
+from API.location import create_table, save_to_db, get_location
+from linebot.v3.messaging import LocationMessage
+
+__all__ = (
+    'store_note',
+    'get_note',
+)
 
 def store_note(
     reply_token,
@@ -57,4 +63,37 @@ def store_note(
         reply_msg=f"✅ 已存入「{location}」的相關資訊：{address}, {latitude}, {longitude}, {keyword}",
     )
 
+    return
+
+
+def get_note(
+    reply_token,
+    message: str,
+    **kwargs,
+):
+    location = message
+
+    if not (location_data := get_location(location)):
+        app.linebot_reply_message(
+            reply_token,
+            reply_msg=f"❌ 找不到「{location}」的地點😢",
+        )
+    
+    locations_data_list = [location_data] if isinstance(location_data, dict) else location_data
+    location_messages = list(map(
+        lambda item: LocationMessage(
+            title=item['title'],
+            address=item['address'],
+            latitude=item['latitude'],
+            longitude=item['longitude']
+        ),
+        locations_data_list[:5],
+        # LINE only accept 5 messages at most
+        # ref: linebot/v3/messaging/models/reply_message_request.py
+    ))
+
+    app.linebot_reply_message(
+        reply_token,
+        reply_msg=location_messages,
+    )
     return
