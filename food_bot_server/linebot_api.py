@@ -19,16 +19,15 @@ from linebot.v3.messaging import (
     TextMessage,
 )
 
-from FUNC.search_btn import getNote, google_command, search, storeNote
-
-USER_DB: dict[str, Callable] = dict()
+from FUNC.search_btn import getNote, google_command, search
+from . import services
 
 def ask_for_title(
     reply_token: str,
     message: str,
     user_id: str,
 ):
-    USER_DB[user_id] = partial(storeNote, key=message)
+    current_app.linebot_db[user_id] = partial(services.store_note, keyword=message)
     current_app.linebot_reply_message(reply_token, "請輸入餐廳名稱：")
     return
 
@@ -49,11 +48,11 @@ def register_handlers(handler: WebhookHandler):
         if (result := MESSAGE_ACTION_MAPPING.get(message)):
             reply_msg, action_func = result
 
-            USER_DB[user_id] = action_func
+            current_app.linebot_db[user_id] = action_func
             current_app.linebot_reply_message(event.reply_token, reply_msg)
             return
 
-        if not (action_func := USER_DB.get(user_id)):
+        if not (action_func := current_app.linebot_db.get(user_id)):
             current_app.linebot_reply_message(event.reply_token, reply_msg="請點選下方【食客助手】")
             return
         
@@ -75,6 +74,7 @@ def init_app(app: Flask):
 
     app.linebot_handler = handler
     app.line_api_client_maker = lambda: ApiClient(config)
+    app.linebot_db = dict() # dict[str, Callable], str for user_id
 
     def _reply_text_message(reply_token: str, reply_msg: str):
         with current_app.line_api_client_maker() as api_client:
