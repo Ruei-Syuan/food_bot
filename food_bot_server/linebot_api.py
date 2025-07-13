@@ -20,7 +20,7 @@ from linebot.v3.messaging import (
     Message,
 )
 
-from FUNC.search_btn import google_command, search
+from FUNC.search_btn import google_command
 from . import services
 
 def ask_for_title(
@@ -34,7 +34,7 @@ def ask_for_title(
 
 MESSAGE_ACTION_MAPPING: dict[str, tuple[str, Callable]] = {
     "時刻超讚推薦": ("請輸入要去的地方", google_command),
-    "時刻搜尋": ("請輸入要去的地方", search),
+    "時刻搜尋": ("請輸入要去的地方", services.search_location_neighborhood),
     "時刻筆記": ("請輸入要新增筆記的關鍵字：", ask_for_title),
     "時刻回想": ("請輸入要回想的關鍵字：", services.get_note),
 }
