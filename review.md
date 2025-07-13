@@ -30,3 +30,19 @@
     重點： 保持 `linebot_reply_message` 的功能單純 (核心一樣是 reply message)，但接受非 `TextMessage` 以外的選項
 
 ## search function
+
+## google_command function
+
+- 大部分結構都有使用 early return, Great Job!
+
+- 部分 config 可以抽成 app env
+  - GOOGLE_MAP_API_USAGE_FILE
+  - GOOGLE_MAP_API_KEY
+  - GOOGLE_MAP_API_DAILY_QUOTA
+
+- Highly nested structure 會導致可讀性變差 (eg. flex bubbles)
+  -> 用 **generator yielding** 的形式，盡量減少 structure indent
+
+- list item filter, list item transform
+  -> 可使用 `filter`, `map` function, 可讀性++ & SRP up
+  （說明: why list function is better than for-loop）
