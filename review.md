@@ -41,7 +41,8 @@
   - GOOGLE_MAP_API_DAILY_QUOTA
 
 - Highly nested structure 會導致可讀性變差 (eg. flex bubbles)
-  -> 用 **generator yielding** 的形式，盡量減少 structure indent
+  - 用 **generator yielding** 的形式，盡量減少 structure indent
+    雖然多了一層 function indent, 但 function 其實是隔絕 context 的操作
 
 - list item filter, list item transform
   -> 可使用 `filter`, `map` function, 可讀性++ & SRP up
@@ -72,7 +73,7 @@ finally:
 ```
 
 - connection lifecycle: by request
-  - 每個 request 要有一個獨立的 connection -> connection factory
+  - 每個 request 要有一個獨立的 connection -> connection factory through Flask App
   - 在整個 request 完成以後，在統一進行 commit (aka 整個 request 視為一次 transaction)
 
 - Inject cursor with decorator

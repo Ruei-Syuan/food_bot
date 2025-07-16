@@ -1,12 +1,15 @@
 from http import HTTPMethod
 from flask import Flask, request
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(f"{__name__}.default_settings")
 
-    from . import linebot_api
+    from . import db, linebot_api
+
     linebot_api.init_app(app)
+    db.init_app(app)
 
     @app.route("/")
     def home():
