@@ -5,7 +5,7 @@ import os
 from flask import current_app as app
 import requests
 
-from API.location import create_table, save_to_db, get_location
+from . import db
 from linebot.v3.messaging import LocationMessage, TextMessage, FlexMessage
 
 __all__ = (
@@ -32,8 +32,6 @@ def store_note(
     """
     location = message
 
-    create_table()
-
     nominatim_url = "https://nominatim.openstreetmap.org/search"
     params = dict(
         q=message,
@@ -56,7 +54,7 @@ def store_note(
         )
         return
     
-    save_to_db(
+    db.store_record(
         title=location,
         latitude=(latitude := float(json_data[0]['lat'])),
         longitude=(longitude := float(json_data[0]['lon'])),
@@ -79,7 +77,7 @@ def get_note(
 ):
     location = message
 
-    if not (location_data := get_location(location)):
+    if not (location_data := db.query_record(text=location)):
         app.linebot_reply_message(
             reply_token,
             reply_msg=f"❌ 找不到「{location}」的地點😢",

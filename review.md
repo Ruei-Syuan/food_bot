@@ -46,3 +46,36 @@
 - list item filter, list item transform
   -> 可使用 `filter`, `map` function, 可讀性++ & SRP up
   （說明: why list function is better than for-loop）
+
+## DB connection design
+
+- Good Practice: bind parameter instead of f-string value parsing
+  -> Avoid SQL Injection
+
+- 善用 `with` context manager: ([ref](https://docs.python.org/3/reference/compound_stmts.html#the-with-statement))
+
+```py
+with EXPRESSION as TARGET:
+    SUITE
+
+# Is equivalent to
+try:
+    TARGET = value
+    SUITE
+except:
+    hit_except = True
+    if not exit(manager, *sys.exc_info()):
+        raise
+finally:
+    if not hit_except:
+        exit(manager, None, None, None)
+```
+
+- connection lifecycle: by request
+  - 每個 request 要有一個獨立的 connection -> connection factory
+  - 在整個 request 完成以後，在統一進行 commit (aka 整個 request 視為一次 transaction)
+
+- Inject cursor with decorator
+  - decorator 可以彈性的 trigger
+  - Function positional argument / keyword argument design (ref: [Python Function Arguments](https://www.codeguage.com/v1/courses/python/functions-arguments))
+    
